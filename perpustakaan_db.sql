@@ -50,31 +50,6 @@ END$$
 
 DELIMITER ;
 
-DELIMITER //
-
-DROP TRIGGER IF EXISTS hitung_denda_sebelum_update;
-//
-
-CREATE TRIGGER hitung_denda_sebelum_update
-BEFORE UPDATE ON peminjaman
-FOR EACH ROW
-BEGIN
-  DECLARE selisih INT DEFAULT 0;
-
-  IF NEW.status_peminjaman = 'Kembali' THEN
-    SET selisih = DATEDIFF(NEW.tanggal_kembali_aktual, NEW.tanggal_kembali_seharusnya);
-
-    IF selisih > 0 THEN
-      SET NEW.denda = selisih * 1000;
-      SET NEW.status_peminjaman = 'Terlambat';
-    ELSE
-      SET NEW.denda = 0;
-    END IF;
-  END IF;
-END;
-//
-
-DELIMITER ;
 -- --------------------------------------------------------
 
 --
@@ -206,6 +181,31 @@ ALTER TABLE `peminjaman`
   ADD CONSTRAINT `peminjaman_ibfk_2` FOREIGN KEY (`id_buku`) REFERENCES `buku` (`id_buku`) ON DELETE CASCADE;
 COMMIT;
 
+DELIMITER //
+
+DROP TRIGGER IF EXISTS hitung_denda_sebelum_update;
+//
+
+CREATE TRIGGER hitung_denda_sebelum_update
+BEFORE UPDATE ON peminjaman
+FOR EACH ROW
+BEGIN
+  DECLARE selisih INT DEFAULT 0;
+
+  IF NEW.status_peminjaman = 'Kembali' THEN
+    SET selisih = DATEDIFF(NEW.tanggal_kembali_aktual, NEW.tanggal_kembali_seharusnya);
+
+    IF selisih > 0 THEN
+      SET NEW.denda = selisih * 1000;
+      SET NEW.status_peminjaman = 'Terlambat';
+    ELSE
+      SET NEW.denda = 0;
+    END IF;
+  END IF;
+END;
+//
+
+DELIMITER ;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
